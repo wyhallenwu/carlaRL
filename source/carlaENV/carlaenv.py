@@ -37,46 +37,46 @@ class CarlaENV(object):
         """
         self.config = get_env_settings()
         self.client = carla.Client(self.config['host'], self.config['port'])
-        self.client.set_timeout(5.0)
+        self.client.set_timeout(2.0)
         self.world = self.client.get_world()
-        self.traffic_manager = self.client.get_trafficmanager(self.config['tm_port'])
-        self.traffic_manager.set_synchronous_mode(True) 
+        self.traffic_manager = self.client.get_trafficmanager(
+            self.config['tm_port'])
+        self.traffic_manager.set_synchronous_mode(True)
         self.traffic_manager.set_random_device_seed(self.config['seed'])
-        # settings update
-        self.update_settings()
-        # init all settings
+        # get blueprint and spawn_points
+        self.bp = self.world.get_blueprint_library()
+        self.spawn_points = self.world.get_map().get_spawn_points()
+        # update settings
+        self._update_settings()
         self.world.apply_settings(self.world_settings)
-        # adding objects and set traffic manager
-        bp = self.world.get_blueprint_library()
-        spawn_points = self.world.get_map().get_spawn_points()
-        self.npc_cars = bp.filter('vehicle')[1:51]
-        for car in self.npc_cars:
-            car.set_autopilot(True, self.traffic_manager.get_port())
-        npc_spawn_points = spawn_points[1:51]
-        self.world.spawn_actor(self.npc_cars, npc_spawn_points)
-        # adding agent(combination of car and camera)
-        self.agent = ActorCar(self.world, bp, spawn_points)
+        # refresh world
+        self.client.reload_world(False)
 
-    def update_settings(self):
+    def _update_settings(self):
         self.world_settings = self.world.get_settings()
         if self.config['syn'] is not None and self.config['substepping'] is not None:
             self.world_settings.synchronous_mode = True
             self.world_settings.fixed_delta_seconds = self.config['syn']['fixed_delta_seconds']
             self.world_settings.substepping = True
-            self.world_settings.max_substep_delta_time = self.config['substepping']['max_substep_delta_time']
+            self.world_settings.max_substep_delta_time = self.config[
+                'substepping']['max_substep_delta_time']
             self.world_settings.max_substeps = self.config['substepping']['max_substeps']
-        
-        
+
+    def _set_env(self):
+        cars = self.bp.filter("vehicle")
+        for i in range(self.config['car_num']):
+            car = self.world.spawn_actor(
+                random.choice(cars), self.spawn_points[i])
+            car.set_autopilot(True)
+        # adding agent(combination of car and camera)
+        self.agent = ActorCar(self.world, self.bp, self.spawn_points)
+
     def step(self, action):
         pass
 
     def reset(self):
-        # always disable sync mode before ends to prevent server blocking
-        self.world_settings.synchronous_mode = True
-        self.world.apply_settings(self.world_settings)
-        self.client.reload_world()
-        self.update_settings()
-        self.traffic_manager.set_random_device_seed(self.config['seed'])
-
-
-    
+        # set false to keep the settings in sync
+        self._update_settings()
+        self.client.reload_world(False)
+        assert len(self.world.get_actors()) == 0
+        self._set_env()

@@ -9,13 +9,16 @@ class ActorCar(object):
     """
 
     def __init__(self, world, bp, spawn_points):
-        self.actor_car = bp.filter('model3')
+        self.actor_car = bp.filter('model3')[0]
         spawn_point = spawn_points[0]
         world.spawn_actor(self.actor_car, spawn_point)
-        self.rgb_camera = bp.find('sensor.camera.rgb')
-        camera_init_transform = carla.Transform(carla.Location(z=2))
-        world.spawn_actor(self.rgb_camera, camera_init_transform,
-                          attach_to=self.actor_car)
-
-    def apply_control(self, action):
-        self.actor_car.apply_control(action)
+        camera = bp.find('sensor.camera.rgb')
+        camera.set_attribute('image_size_x', '640')
+        camera.set_attribute('image_size_y', '480')
+        camera.set_attribute('fov', '110')
+        transform = carla.Transform(carla.Location(x=2.5, z=0.5))
+        self.rgb_camera = world.spawn_actor(camera, transform,
+                                            attach_to=self.actor_car)
+        collision_sensor = bp.find('sensor.other.collision')
+        self.col_sensor = world.spawn_actor(collision_sensor,
+                                            transform, attach_to=self.actor_car)
