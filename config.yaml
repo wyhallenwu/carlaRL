@@ -1,0 +1,7 @@
+host: localhost
+port: 2000
+syn:
+  fixed_delta_seconds: 0.05
+substepping:
+  max_substep_delta_time: 0.01
+  max_substeps: 10
