@@ -28,27 +28,22 @@ class CarlaENV(object):
     def __init__(self):
         """initialize the environment.
         important members:
+            self.config
             self.client
             self.world
             self.agent
             self.npc_cars
             self.traffic_manager
         """
-        config = get_env_settings()
-        self.client = carla.Client(config['host'], config['port'])
+        self.config = get_env_settings()
+        self.client = carla.Client(self.config['host'], self.config['port'])
         self.client.set_timeout(5.0)
         self.world = self.client.get_world()
-        self.traffic_manager = self.client.get_trafficmanager()
+        self.traffic_manager = self.client.get_trafficmanager(self.config['tm_port'])
         self.traffic_manager.set_synchronous_mode(True) 
-        self.traffic_manager.set_random_device_seed(0)
+        self.traffic_manager.set_random_device_seed(self.config['seed'])
         # settings update
-        self.world_settings = self.world.get_settings()
-        if config['syn'] is not None and config['substepping'] is not None:
-            self.world_settings.synchronous_mode = True
-            self.world_settings.fixed_delta_seconds = config['syn']['fixed_delta_seconds']
-            self.world_settings.substepping = True
-            self.world_settings.max_substep_delta_time = config['substepping']['max_substep_delta_time']
-            self.world_settings.max_substeps = config['substepping']['max_substeps']
+        self.update_settings()
         # init all settings
         self.world.apply_settings(self.world_settings)
         # adding objects and set traffic manager
@@ -56,15 +51,32 @@ class CarlaENV(object):
         spawn_points = self.world.get_map().get_spawn_points()
         self.npc_cars = bp.filter('vehicle')[1:51]
         for car in self.npc_cars:
-            car.set_autopilot(True)
+            car.set_autopilot(True, self.traffic_manager.get_port())
         npc_spawn_points = spawn_points[1:51]
         self.world.spawn_actor(self.npc_cars, npc_spawn_points)
         # adding agent(combination of car and camera)
         self.agent = ActorCar(self.world, bp, spawn_points)
+
+    def update_settings(self):
+        self.world_settings = self.world.get_settings()
+        if self.config['syn'] is not None and self.config['substepping'] is not None:
+            self.world_settings.synchronous_mode = True
+            self.world_settings.fixed_delta_seconds = self.config['syn']['fixed_delta_seconds']
+            self.world_settings.substepping = True
+            self.world_settings.max_substep_delta_time = self.config['substepping']['max_substep_delta_time']
+            self.world_settings.max_substeps = self.config['substepping']['max_substeps']
         
         
     def step(self, action):
         pass
+
+    def reset(self):
+        # always disable sync mode before ends to prevent server blocking
+        self.world_settings.synchronous_mode = True
+        self.world.apply_settings(self.world_settings)
+        self.client.reload_world()
+        self.update_settings()
+        self.traffic_manager.set_random_device_seed(self.config['seed'])
 
 
     
