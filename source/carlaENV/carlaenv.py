@@ -32,17 +32,17 @@ class CarlaENV(object):
             self.client
             self.world
             self.agent
-            self.npc_cars
             self.traffic_manager
         """
         self.config = get_env_settings()
         self.client = carla.Client(self.config['host'], self.config['port'])
-        self.client.set_timeout(2.0)
+        self.client.set_timeout(3.0)
         self.world = self.client.get_world()
         self.traffic_manager = self.client.get_trafficmanager(
             self.config['tm_port'])
         self.traffic_manager.set_synchronous_mode(True)
         self.traffic_manager.set_random_device_seed(self.config['seed'])
+        self.agent = None
         # get blueprint and spawn_points
         self.bp = self.world.get_blueprint_library()
         self.spawn_points = self.world.get_map().get_spawn_points()
@@ -51,6 +51,7 @@ class CarlaENV(object):
         self.world.apply_settings(self.world_settings)
         # refresh world
         self.client.reload_world(False)
+        self._set_env()
 
     def _update_settings(self):
         self.world_settings = self.world.get_settings()
@@ -73,10 +74,12 @@ class CarlaENV(object):
 
     def step(self, action):
         pass
-
     def reset(self):
         # set false to keep the settings in sync
         self._update_settings()
         self.client.reload_world(False)
-        assert len(self.world.get_actors()) == 0
+        assert len(self.world.get_actors().filter(
+            'vehicle')) == 0, "reload wrong"
         self._set_env()
+        assert len(self.world.get_actors().filter(
+            'vehicle')) != 0, "reload succeed"
