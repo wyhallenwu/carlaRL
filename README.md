@@ -8,5 +8,7 @@ this the final project of RL course. The project is to train a simple autonomous
   - [x] reset() reset the world to the init status
   - [x] agent(actor)
 
+> need to fix problem of reset environment. May using destroy() for all actors
+
 - [ ] sample trajectories
 - [ ] replaybuffer

@@ -36,7 +36,7 @@ class CarlaEnv(object):
         """
         self.config = get_env_settings()
         self.client = carla.Client(self.config['host'], self.config['port'])
-        self.client.set_timeout(3.0)
+        self.client.set_timeout(15)
         self.world = self.client.get_world()
         self.traffic_manager = self.client.get_trafficmanager(
             self.config['tm_port'])
@@ -67,9 +67,11 @@ class CarlaEnv(object):
     def _set_env(self):
         """adding npc cars and create actor."""
         cars = self.bp.filter("vehicle")
+        print(f"set {self.config['car_num']} vehicles in the world")
         for i in range(self.config['car_num']):
             car = self.world.spawn_actor(
-                random.choice(cars), self.spawn_points[i])
+                random.choice(cars), self.spawn_points[i + 1])
+            self.client.set_timeout(1)
             car.set_autopilot(True)
         # adding agent(combination of car and camera)
         self.agent = ActorCar(self.world, self.bp, self.spawn_points)
@@ -96,13 +98,22 @@ class CarlaEnv(object):
     def reset(self):
         """reset the environment while keeping the init settings."""
         # set false to keep the settings in sync
+        print("initialize environment.")
         self._update_settings()
         self.client.reload_world(False)
+        self.client.set_timeout(15)
         assert len(self.world.get_actors().filter(
             'vehicle')) == 0, "reload wrong"
+        # adding cars to env
+        self.world.tick()
         self._set_env()
+        # deploy env in sync mode
+        self.world.tick()
+        # self.client.set_timeout(10)
+        print("check: ", len(self.world.get_actors().filter(
+            'vehicle')))
         assert len(self.world.get_actors().filter(
-            'vehicle')) != 0, "reload succeed"
+            'vehicle')) != 0, "set env wrong"
 
     def get_reward(self, action, intensity):
         """reward policy.
