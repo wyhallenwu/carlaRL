@@ -2,9 +2,9 @@ import carla
 import random
 import queue
 import yaml
-from source.Agent import ActorCar
+from source.Agent.agent import ActorCar
 
-SETTING_FILE = '../config.yaml'
+SETTING_FILE = "./config.yaml"
 
 
 def get_env_settings():
@@ -19,12 +19,12 @@ def get_env_settings():
         env_settings = yaml.safe_load(f.read())
 
     # settings should follow the instructions
-    assert env_settings['SYN']['fixed_delta_seconds'] <= env_settings['substepping']['max_substep_delta_time'] * \
+    assert env_settings['syn']['fixed_delta_seconds'] <= env_settings['substepping']['max_substep_delta_time'] * \
         env_settings['substepping']['max_substeps'], "substepping settings wrong!"
     return env_settings
 
 
-class CarlaENV(object):
+class CarlaEnv(object):
     def __init__(self):
         """initialize the environment.
         important members:
@@ -77,7 +77,8 @@ class CarlaENV(object):
 
     def step(self, action):
         """take an action.
-
+        Args:
+            action(carla.VehicleControl):throttle, steer, break, hand_break, reverse
         Returns:
             observation(np.array(640, 480, 3))
             reward(int)
@@ -117,3 +118,18 @@ class CarlaENV(object):
             return -10
         else:
             return 1
+
+    def get_all_actors(self):
+        """get all Actors in carla env.
+        Returns:
+            carla.ActorList
+        """
+        return self.world.get_actors()
+
+    def get_all_vehicles(self):
+        """get all vehicles in carla env including actor_car.
+        Returns:
+            carla.ActorList
+        """
+        return self.world.get_actors().filter('*vehicle*')
+    
