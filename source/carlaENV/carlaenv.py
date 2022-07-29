@@ -43,6 +43,7 @@ class CarlaENV(object):
         self.traffic_manager.set_synchronous_mode(True)
         self.traffic_manager.set_random_device_seed(self.config['seed'])
         self.agent = None
+        self.vehicle_control = None
         # get blueprint and spawn_points
         self.bp = self.world.get_blueprint_library()
         self.spawn_points = self.world.get_map().get_spawn_points()
@@ -64,6 +65,7 @@ class CarlaENV(object):
             self.world_settings.max_substeps = self.config['substepping']['max_substeps']
 
     def _set_env(self):
+        """adding npc cars and create actor."""
         cars = self.bp.filter("vehicle")
         for i in range(self.config['car_num']):
             car = self.world.spawn_actor(
@@ -71,10 +73,27 @@ class CarlaENV(object):
             car.set_autopilot(True)
         # adding agent(combination of car and camera)
         self.agent = ActorCar(self.world, self.bp, self.spawn_points)
+        self.vehicle_control = self.agent.actor_car.apply_control
 
     def step(self, action):
-        pass
+        """take an action.
+
+        Returns:
+            observation(np.array(640, 480, 3))
+            reward(int)
+            done(bool)
+        """
+        assert isinstance(
+            action, carla.VehicleControl), "action type is not vehicle control"
+        self.vehicle_control(action)
+        self.world.tick()
+        observation, intensity = self.agent.retrieve_data()
+        reward = self.get_reward(action, intensity)
+        done = True if reward == -200 else False
+        return observation, reward, done
+
     def reset(self):
+        """reset the environment while keeping the init settings."""
         # set false to keep the settings in sync
         self._update_settings()
         self.client.reload_world(False)
@@ -83,3 +102,18 @@ class CarlaENV(object):
         self._set_env()
         assert len(self.world.get_actors().filter(
             'vehicle')) != 0, "reload succeed"
+
+    def get_reward(self, action, intensity):
+        """reward policy.
+        Args:
+            action(carla.VehicleControl)
+            intensity(float):the length of the collision_impluse
+        Returns:
+            reward:int
+        """
+        if intensity > 10:
+            return -200
+        elif action.hand_break or action.reverse:
+            return -10
+        else:
+            return 1
