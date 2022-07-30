@@ -44,6 +44,7 @@ class CarlaEnv(object):
         self.traffic_manager.set_random_device_seed(self.config['seed'])
         self.agent = None
         self.vehicle_control = None
+        self.actor_list_env = []
         # get blueprint and spawn_points
         self.bp = self.world.get_blueprint_library()
         self.spawn_points = self.world.get_map().get_spawn_points()
@@ -71,7 +72,8 @@ class CarlaEnv(object):
         for i in range(self.config['car_num']):
             car = self.world.spawn_actor(
                 random.choice(cars), self.spawn_points[i + 1])
-            self.client.set_timeout(1)
+            self.actor_list_env.append(car)
+            # self.client.set_timeout(1)
             car.set_autopilot(True)
         # adding agent(combination of car and camera)
         self.agent = ActorCar(self.world, self.bp, self.spawn_points)
@@ -99,11 +101,10 @@ class CarlaEnv(object):
         """reset the environment while keeping the init settings."""
         # set false to keep the settings in sync
         print("initialize environment.")
-        self._update_settings()
-        self.client.reload_world(False)
-        self.client.set_timeout(15)
+        self.cleanup_world()
+        self.client.set_timeout(2)
         assert len(self.world.get_actors().filter(
-            'vehicle')) == 0, "reload wrong"
+            '*vehicle*')) == 0, "reload wrong"
         # adding cars to env
         self.world.tick()
         self._set_env()
@@ -111,9 +112,9 @@ class CarlaEnv(object):
         self.world.tick()
         # self.client.set_timeout(10)
         print("check: ", len(self.world.get_actors().filter(
-            'vehicle')))
+            '*vehicle*')))
         assert len(self.world.get_actors().filter(
-            'vehicle')) != 0, "set env wrong"
+            '*vehicle*')) != self.config['car_num'] + 1, "set env wrong"
 
     def get_reward(self, action, intensity):
         """reward policy.
@@ -129,6 +130,16 @@ class CarlaEnv(object):
             return -10
         else:
             return 1
+
+    def cleanup_world(self):
+        # clean up the env
+        for actor in self.actor_list_env:
+            assert actor.destroy(), "destroy actor false in env"
+        # clean up the agent
+        self.agent.cleanup()
+        self.agent = None
+        self.actor_list_env.clear()
+        print("clean up the world")
 
     def get_all_actors(self):
         """get all Actors in carla env.

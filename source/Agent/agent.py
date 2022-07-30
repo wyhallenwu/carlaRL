@@ -45,3 +45,9 @@ class ActorCar(object):
     def process_col_event(self, event):
         impulse = event.normal_impulse
         self.collision_intensity = impulse.length()
+
+    def cleanup(self):
+        """cleanup is to destroy all agent actors in the world."""
+        for a in self.actor_list:
+            assert a.destroy(), "destroy actor wrong in agent "
+        print("destroy all actors of agent")
