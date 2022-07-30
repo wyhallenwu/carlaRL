@@ -114,7 +114,7 @@ class CarlaEnv(object):
         print("check: ", len(self.world.get_actors().filter(
             '*vehicle*')))
         assert len(self.world.get_actors().filter(
-            '*vehicle*')) != (self.config['car_num'] + 1), "set env wrong"
+            '*vehicle*')) == (self.config['car_num'] + 1), "set env wrong"
 
     def get_reward(self, action, intensity):
         """reward policy.
