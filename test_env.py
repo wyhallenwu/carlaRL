@@ -10,10 +10,10 @@ x = 0
 
 # print("start_image frame: ", )
 while x < 3:
-    env.client.reload_world(False)
-    env.client.set_timeout(15)
-    print(len(env.world.get_actors()))
-    print(env)
+    # env.client.reload_world(False)
+    # env.client.set_timeout(15)
+    # print(len(env.world.get_actors()))
+    # print(env)
     start_image, _ = env.reset()
     print(f"episode {x + 1}")
     while n < 1000:

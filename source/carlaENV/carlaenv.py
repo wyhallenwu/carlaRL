@@ -107,7 +107,8 @@ class CarlaEnv(object):
         # set false to keep the settings in sync
         print("initialize environment.")
         self.cleanup_world()
-        self.client.set_timeout(5)
+        # self.client.reload_world(False)
+        self.client.set_timeout(15)
         # adding cars to env
         # self.world.tick()
         self._update_settings()
@@ -169,11 +170,14 @@ class CarlaEnv(object):
         Returns:
             carla.ActorList
         """
-        return self.world.get_actors().filter('*vehicle*')
+        return self.world.get_actors().filter('vehicle')
 
     def _exit(self):
+        # self.client.reload_world(False)
         self.cleanup_world()
         settings = self.world.get_settings()
         settings.synchronous_mode = False
         self.world.apply_settings(settings)
+        print(
+            f"before exited, there are { len(self.get_all_vehicles())} actors")
         print("exit world")

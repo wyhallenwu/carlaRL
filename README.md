@@ -14,6 +14,7 @@ this the final project of RL course. The project is to train a simple autonomous
 > use collision to indicate the episode ends.
 
 > receive warning when destroy sensors: you should firstly sensor.stop()
+> don't use reload_world(), it causes some problems(high memory usage and finally core dumped)
 
 - [ ] sample trajectories
 - [ ] replaybuffer
