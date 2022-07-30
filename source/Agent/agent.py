@@ -48,6 +48,8 @@ class ActorCar(object):
 
     def cleanup(self):
         """cleanup is to destroy all agent actors in the world."""
+        if len(self.actor_list) == 0:
+            return
         for a in self.actor_list:
             assert a.destroy(), "destroy actor wrong in agent "
         print("destroy all actors of agent")
