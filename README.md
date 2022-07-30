@@ -10,5 +10,10 @@ this the final project of RL course. The project is to train a simple autonomous
 
 > need to fix problem of reset environment. May using destroy() for all actors
 
+> solution:
+> use collision to indicate the episode ends.
+
+> receive warning when destroy sensors: you should firstly sensor.stop()
+
 - [ ] sample trajectories
 - [ ] replaybuffer

@@ -38,10 +38,10 @@ class CarlaEnv(object):
         self.client = carla.Client(self.config['host'], self.config['port'])
         self.client.set_timeout(15)
         self.world = self.client.get_world()
-        self.traffic_manager = self.client.get_trafficmanager(
-            self.config['tm_port'])
-        self.traffic_manager.set_synchronous_mode(True)
-        self.traffic_manager.set_random_device_seed(self.config['seed'])
+        # self.traffic_manager = self.client.get_trafficmanager(
+        #     self.config['tm_port'])
+        # self.traffic_manager.set_synchronous_mode(True)
+        # self.traffic_manager.set_random_device_seed(self.config['seed'])
         self.agent = None
         self.vehicle_control = None
         self.actor_list_env = []
@@ -51,9 +51,11 @@ class CarlaEnv(object):
         # update settings
         self._update_settings()
         self.world.apply_settings(self.world_settings)
+        print("init actors num", len(self.world.get_actors().filter(
+            'vehicle')))
         # refresh world
-        self.client.reload_world(False)
-        self._set_env()
+        # self.client.reload_world(False)
+        # self._set_env()
 
     def _update_settings(self):
         self.world_settings = self.world.get_settings()
@@ -72,11 +74,13 @@ class CarlaEnv(object):
         for i in range(self.config['car_num']):
             car = self.world.spawn_actor(
                 random.choice(cars), self.spawn_points[i + 1])
-            self.actor_list_env.append(car)
             # self.client.set_timeout(1)
             car.set_autopilot(True)
+            self.actor_list_env.append(car)
+        print(f"setting {len(self.actor_list_env)} in _set_env")
         # adding agent(combination of car and camera)
-        self.agent = ActorCar(self.world, self.bp, self.spawn_points)
+        self.agent = ActorCar(self.client, self.world,
+                              self.bp, self.spawn_points)
         self.vehicle_control = self.agent.actor_car.apply_control
 
     def step(self, action):
@@ -91,10 +95,11 @@ class CarlaEnv(object):
         assert isinstance(
             action, carla.VehicleControl), "action type is not vehicle control"
         self.vehicle_control(action)
-        self.world.tick()
-        observation, intensity = self.agent.retrieve_data()
-        reward = self.get_reward(action, intensity)
-        done = True if reward == -200 else False
+        frame_index = self.world.tick()
+        print(f"after step, current frame is: {frame_index}")
+        observation, collision = self.agent.retrieve_data(frame_index)
+        reward = self.get_reward(action, collision)
+        done = True if collision != 0 else False
         return observation, reward, done
 
     def reset(self):
@@ -102,19 +107,21 @@ class CarlaEnv(object):
         # set false to keep the settings in sync
         print("initialize environment.")
         self.cleanup_world()
-        self.client.set_timeout(2)
-        assert len(self.world.get_actors().filter(
-            '*vehicle*')) == 0, "reload wrong"
+        self.client.set_timeout(5)
         # adding cars to env
-        self.world.tick()
+        # self.world.tick()
+        self._update_settings()
         self._set_env()
         # deploy env in sync mode
-        self.world.tick()
+        frame_index = self.world.tick()
+        print(f"after reset, current frame is: {frame_index}")
         # self.client.set_timeout(10)
-        print("check: ", len(self.world.get_actors().filter(
-            '*vehicle*')))
+        # print("check: ", len(self.world.get_actors().filter(
+        #     '*vehicle*')))
         assert len(self.world.get_actors().filter(
             '*vehicle*')) == (self.config['car_num'] + 1), "set env wrong"
+        # return start image frame
+        return self.agent.retrieve_data(frame_index)
 
     def get_reward(self, action, intensity):
         """reward policy.
@@ -124,22 +131,31 @@ class CarlaEnv(object):
         Returns:
             reward:int
         """
-        if intensity > 10:
+        if intensity != 0:
             return -200
-        elif action.hand_break or action.reverse:
+        elif action.hand_brake or action.reverse:
             return -10
         else:
             return 1
 
     def cleanup_world(self):
         # clean up the env
-        for actor in self.actor_list_env:
-            assert actor.destroy(), "destroy actor false in env"
+        print("actorlist length: ", len(self.actor_list_env))
+        # for actor in self.actor_list_env:
+        #     assert actor.destroy(), "destroy actor false in env"
+        self.client.apply_batch([carla.command.DestroyActor(x)
+                                 for x in self.actor_list_env])
         # clean up the agent
-        self.agent.cleanup()
+        if self.agent is not None:
+            print("destroy agent")
+            self.agent.cleanup()
         self.agent = None
-        self.actor_list_env.clear()
+        self.actor_list_env = []
         print("clean up the world")
+        print("after cleanup world actors: ", len(self.world.get_actors().filter(
+            'vehicle')))
+        assert len(self.world.get_actors().filter(
+            'vehicle')) == 0, "cleanup world wrong"
 
     def get_all_actors(self):
         """get all Actors in carla env.
@@ -154,4 +170,10 @@ class CarlaEnv(object):
             carla.ActorList
         """
         return self.world.get_actors().filter('*vehicle*')
-    
+
+    def _exit(self):
+        self.cleanup_world()
+        settings = self.world.get_settings()
+        settings.synchronous_mode = False
+        self.world.apply_settings(settings)
+        print("exit world")
