@@ -1,12 +1,11 @@
 from source.carlaENV import carlaenv
 import carla
 env = carlaenv.CarlaEnv()
-
+env.client.reload_world(False)
+env.client.set_timeout(15)
 n = 0
 x = 0
-
 while x < 3:
-
     start_image, _ = env.reset()
     print(f"episode {x + 1}")
     while n < 1000:

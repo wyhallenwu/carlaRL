@@ -2,6 +2,7 @@ import numpy as np
 import yaml
 # from source.carlaENV.carlaenv import CarlaEnv
 import torch
+import carla
 
 
 def get_env_settings(filename):
@@ -42,11 +43,14 @@ def Path(obs, acs, rws, next_obs, terminals):
 def sample_trajectory(env, action_policy, max_episode_length):
     """Sample one trajectory."""
     ob, _ = env.reset()
+    # env.set_timeout(5)
     steps = 0
-    obs, acs, rws, next_obs, terminals = [], [], [], []
+    obs, acs, rws, next_obs, terminals = [], [], [], [], []
     while True:
         obs.append(ob)
         ac = action_policy.get_action(ob)
+        ac = convert_tensor2control(ac)
+        # ac = action_policy  # test env
         next_ob, reward, done = env.step(ac)
         acs.append(ac)
         rws.append(reward)
@@ -77,6 +81,16 @@ def convert_path2list(paths):
     next_obs = [path["next_obs"] for path in paths]
     terminals = [path["terminals"] for path in paths]
     return observations, actions, rewards, next_obs, terminals
+
+
+def convert_control2numpy(action: carla.VehicleControl) -> np.ndarray:
+    """Convert the control to numpy array."""
+    return np.array([action.throttle, action.steer, action.brake, action.hand_brake, action.reverse])
+
+
+def convert_tensor2control(pred_action: torch.Tensor) -> carla.VehicleControl:
+    ac = tonumpy(pred_action)
+    return carla.VehicleControl(ac[0], ac[1], ac[2], ac[3], ac[4])
 
 
 device = None

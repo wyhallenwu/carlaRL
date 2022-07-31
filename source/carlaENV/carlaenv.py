@@ -58,14 +58,16 @@ class CarlaEnv(object):
         for i in range(self.config['car_num']):
             car = self.world.spawn_actor(
                 random.choice(cars), self.spawn_points[i + 1])
-            # self.client.set_timeout(1)
             car.set_autopilot(True)
             self.actor_list_env.append(car)
         print(f"setting {len(self.actor_list_env)} in _set_env")
+        # self.client.set_timeout(5)
         # adding agent(combination of car and camera)
         self.agent = ActorCar(self.client, self.world,
                               self.bp, self.spawn_points)
         self.vehicle_control = self.agent.actor_car.apply_control
+        # print("check0: ", len(self.world.get_actors().filter(
+        #     'vehicle')))
 
     def step(self, action):
         """take an action.
