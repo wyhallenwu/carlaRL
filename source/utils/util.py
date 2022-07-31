@@ -1,6 +1,6 @@
 import numpy as np
 import yaml
-from source.carlaENV.carlaenv import CarlaEnv
+# from source.carlaENV.carlaenv import CarlaEnv
 import torch
 
 
@@ -39,7 +39,7 @@ def Path(obs, acs, rws, next_obs, terminals):
     }
 
 
-def sample_trajectory(env: CarlaEnv, action_policy, max_episode_length):
+def sample_trajectory(env, action_policy, max_episode_length):
     """Sample one trajectory."""
     ob, _ = env.reset()
     steps = 0
