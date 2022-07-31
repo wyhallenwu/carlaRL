@@ -1,19 +1,12 @@
 from source.carlaENV import carlaenv
 import carla
 env = carlaenv.CarlaEnv()
-# print(len(env.bp.filter("vehicle")))
-# print(len(env.bp.filter("*vehicle*")))
+
 n = 0
 x = 0
-# print(env.world.get_map().name)
 
-
-# print("start_image frame: ", )
 while x < 3:
-    # env.client.reload_world(False)
-    # env.client.set_timeout(15)
-    # print(len(env.world.get_actors()))
-    # print(env)
+
     start_image, _ = env.reset()
     print(f"episode {x + 1}")
     while n < 1000:

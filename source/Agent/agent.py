@@ -53,10 +53,12 @@ class ActorCar(object):
             assert self._camera_queue.qsize() == 0, "Expected qsize of images 0"
             assert frame_index == image.frame, "not the corresponding frame image."
             print(f"current image frame is: {image.frame}")
+            # BGRA
             img = np.reshape(image.raw_data, (640, 480, 4))
+            # slice BGR
             img = img[:, :, :3]
-            # normalize the image to [0,1]
-            self.front_camera = img[:, :, ::-1]/255.0
+            # reverse to RGB
+            self.front_camera = img[:, :, ::-1]
             return True
         self.front_camera = None
         return False

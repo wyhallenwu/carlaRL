@@ -1,6 +1,7 @@
 import numpy as np
 import yaml
 from source.carlaENV.carlaenv import CarlaEnv
+import torch
 
 
 def get_env_settings(filename):
@@ -62,18 +63,42 @@ def sample_trajectory(env: CarlaEnv, action_policy, max_episode_length):
 
 def sample_n_trajectories(n, env, action_policy, max_episode_length):
     paths = []
-    for i in range(n):
+    for _ in range(n):
         path = sample_trajectory(env, action_policy, max_episode_length)
         paths.append(path)
-
     return paths
 
 
 def convert_path2list(paths):
+    """convert the path to five list."""
     observations = [path["observations"] for path in paths]
     actions = [path["actions"] for path in paths]
     rewards = [path["rewards"] for path in paths]
     next_obs = [path["next_obs"] for path in paths]
     terminals = [path["terminals"] for path in paths]
-
     return observations, actions, rewards, next_obs, terminals
+
+
+device = None
+
+
+def init_gpu(use_gpu=True, gpu_id=0):
+    global device
+    if torch.cuda.is_available() and use_gpu:
+        device = torch.device("cuda:" + str(gpu_id))
+        print("Using GPU id {}".format(gpu_id))
+    else:
+        device = torch.device("cpu")
+        print("GPU not detected. Defaulting to CPU.")
+
+
+def set_device(gpu_id):
+    torch.cuda.set_device(gpu_id)
+
+
+def totensor(x: np.ndarray) -> torch.Tensor:
+    return torch.from_numpy(x).float().to(device)
+
+
+def tonumpy(x: torch.Tensor) -> np.ndarray:
+    return x.to('cpu').detach().numpy()

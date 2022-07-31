@@ -83,7 +83,7 @@ class CarlaEnv(object):
         print(f"after step, current frame is: {frame_index}")
         observation, collision = self.agent.retrieve_data(frame_index)
         reward = self.get_reward(action, collision)
-        done = True if collision != 0 else False
+        done = 1 if collision != 0 else 0
         return observation, reward, done
 
     def reset(self):
