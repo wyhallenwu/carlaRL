@@ -3,25 +3,9 @@ import random
 import queue
 import yaml
 from source.Agent.agent import ActorCar
+from source.utils.util import get_env_settings
 
 SETTING_FILE = "./config.yaml"
-
-
-def get_env_settings():
-    """get all the settings of the Carla Simulator.
-
-    The settings can be configured in config.yaml
-
-    Returns:
-        a dict of the initial settings
-    """
-    with open(SETTING_FILE, 'r') as f:
-        env_settings = yaml.safe_load(f.read())
-
-    # settings should follow the instructions
-    assert env_settings['syn']['fixed_delta_seconds'] <= env_settings['substepping']['max_substep_delta_time'] * \
-        env_settings['substepping']['max_substeps'], "substepping settings wrong!"
-    return env_settings
 
 
 class CarlaEnv(object):
@@ -34,7 +18,7 @@ class CarlaEnv(object):
             self.agent
             self.traffic_manager
         """
-        self.config = get_env_settings()
+        self.config = get_env_settings(SETTING_FILE)
         self.client = carla.Client(self.config['host'], self.config['port'])
         self.client.set_timeout(15)
         self.world = self.client.get_world()
