@@ -58,7 +58,6 @@ def sample_trajectory(env, action_policy, max_episode_length):
         terminals.append(done)
         ob = next_ob
         steps += 1
-
         if done or steps >= max_episode_length:
             break
 
@@ -85,12 +84,12 @@ def convert_path2list(paths):
 
 def convert_control2numpy(action: carla.VehicleControl) -> np.ndarray:
     """Convert the control to numpy array."""
-    return np.array([action.throttle, action.steer, action.brake, action.hand_brake, action.reverse])
+    return np.array([action.throttle, action.steer, action.brake])
 
 
 def convert_tensor2control(pred_action: torch.Tensor) -> carla.VehicleControl:
     ac = tonumpy(pred_action)
-    return carla.VehicleControl(ac[0], ac[1], ac[2], ac[3], ac[4])
+    return carla.VehicleControl(ac[0], ac[1], ac[2])
 
 
 device = None
@@ -116,3 +115,19 @@ def totensor(x: np.ndarray) -> torch.Tensor:
 
 def tonumpy(x: torch.Tensor) -> np.ndarray:
     return x.to('cpu').detach().numpy()
+
+
+def map2action(index):
+    """map action index to action.
+
+    Returns:
+        carla.VehicleControl()
+    """
+    if index == 0:
+        return carla.VehicleControl(1, 0, 0)
+    elif index == 1:
+        return carla.VehicleControl(1, -1, 0)
+    elif index == 2:
+        return carla.VehicleControl(1, 1, 0)
+    else:
+        return carla.VehicleControl(0, 0, 1)

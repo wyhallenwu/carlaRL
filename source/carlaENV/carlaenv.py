@@ -1,6 +1,7 @@
 import carla
 import random
 import queue
+from cv2 import calibrateCamera
 import yaml
 from source.Agent.agent import ActorCar
 from source.utils.util import get_env_settings
@@ -110,17 +111,17 @@ class CarlaEnv(object):
         # return start image frame
         return self.agent.retrieve_data(frame_index)
 
-    def get_reward(self, action, intensity):
+    def get_reward(self, action_index, intensity):
         """reward policy.
         Args:
-            action(carla.VehicleControl)
+            action(carla.VehicleControl):only taking throttle[0, 1], steer[-1, 1], reverse[0, 1]
             intensity(float):the length of the collision_impluse
         Returns:
             reward:int
         """
         if intensity != 0:
             return -200
-        elif action.hand_brake or action.reverse:
+        if action_index == 4:
             return -10
         else:
             return 1

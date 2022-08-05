@@ -1,6 +1,7 @@
 import carla
 import numpy as np
 import queue
+from PIL import Image
 
 
 class ActorCar(object):
@@ -58,7 +59,8 @@ class ActorCar(object):
             # slice BGR
             img = img[:, :, :3]
             # reverse to RGB
-            self.front_camera = img[:, :, ::-1]
+            img = img[:, :, ::-1]
+            self.front_camera = Image.fromarray(np.uint8(img)).convert('RGB')
             return True
         self.front_camera = None
         return False
