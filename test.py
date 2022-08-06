@@ -66,7 +66,14 @@
 
 import numpy as np
 import torch
-x = np.array([1, 2, 3, 4])
+from torch import distributions
+x = np.array([0.1, 0.2, 0.3, 0.4])
 y = torch.from_numpy(x)
+z = distributions.Categorical(y)
 print(x.shape)
 print(y.shape)
+a = z.sample()
+if a == 1:
+    print("yes")
+else:
+    print(z.log_prob(a))

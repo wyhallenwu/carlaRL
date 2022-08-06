@@ -44,6 +44,10 @@ class ReplayBuffer(object):
         return self.paths[indices]
 
     def sample_recent_rollouts(self, num_rollouts):
+        """Sample recent rollouts.
+        Returns:
+            paths: A list of path
+        """
         return self.paths[-num_rollouts:]
 
     def get_paths_num(self):
