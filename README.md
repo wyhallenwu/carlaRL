@@ -18,6 +18,7 @@ this the final project of RL course. The project is to train a simple autonomous
 
 - [x] sample trajectories
 - [x] replaybuffer
-- [ ] rl algorithm(actor-critic)
-  - [ ] generate action
-  - [ ] pay attention to tensor numpy conversion and detach
+- [x] rl algorithm(actor-critic)
+  - [x] generate action
+  - [x] pay attention to tensor numpy conversion and detach
+  - [ ] need test

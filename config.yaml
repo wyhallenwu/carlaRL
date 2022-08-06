@@ -8,3 +8,8 @@ syn:
 substepping:
   max_substep_delta_time: 0.01
   max_substeps: 10
+n_layers: 3
+lr: 0.0001
+gamma: 0.5
+buffer_size: 100000
+hidden_dim: 1024
