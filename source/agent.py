@@ -2,6 +2,7 @@ import carla
 import numpy as np
 import queue
 from PIL import Image
+from torchvision import transforms
 
 
 class ActorCar(object):
@@ -39,6 +40,13 @@ class ActorCar(object):
         self._col_queue = queue.Queue()
         self.rgb_camera.listen(self._camera_queue.put)
         self.col_sensor.listen(self._col_queue.put)
+        self.image_transform = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
+                                 0.229, 0.224, 0.225]),
+        ])
 
     def retrieve_data(self, frame_index):
         while not self.process_img(frame_index):
@@ -60,7 +68,8 @@ class ActorCar(object):
             img = img[:, :, :3]
             # reverse to RGB
             img = img[:, :, ::-1]
-            self.front_camera = Image.fromarray(np.uint8(img)).convert('RGB')
+            image = Image.fromarray(np.uint8(img)).convert('RGB')
+            self.front_camera = self.image_transform(image)
             return True
         self.front_camera = None
         return False
@@ -77,8 +86,6 @@ class ActorCar(object):
 
     def cleanup(self):
         """cleanup is to destroy all agent actors in the world."""
-        # for a in self.actor_list:
-        #     assert a.destroy(), "destroy actor wrong in agent "
         self.rgb_camera.stop()
         self.col_sensor.stop()
         self.client.apply_batch([carla.command.DestroyActor(x)

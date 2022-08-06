@@ -67,13 +67,18 @@
 import numpy as np
 import torch
 from torch import distributions
-x = np.array([0.1, 0.2, 0.3, 0.4])
+x = np.array([[0.1, 0.2, 0.3, 0.4], [0.1, 0.2, 0.3, 0.4]])
 y = torch.from_numpy(x)
 z = distributions.Categorical(y)
-print(x.shape)
 print(y.shape)
+
+t = torch.stack([torch.ones([3, 224, 224])
+                for _ in range(2)])
+print(t.shape)
+v = torch.cat([t, t * 2])
+
+v = v[-1:]
+print(v)
+print(v.shape)
 a = z.sample()
-if a == 1:
-    print("yes")
-else:
-    print(z.log_prob(a))
+print(a.shape)
