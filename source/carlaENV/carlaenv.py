@@ -1,8 +1,5 @@
 import carla
 import random
-import queue
-from cv2 import calibrateCamera
-import yaml
 from source.Agent.agent import ActorCar
 from source.utils.util import get_env_settings
 

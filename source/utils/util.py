@@ -2,6 +2,7 @@ import numpy as np
 import yaml
 # from source.carlaENV.carlaenv import CarlaEnv
 import torch
+import torch.nn as nn
 import carla
 
 
@@ -49,7 +50,7 @@ def sample_trajectory(env, action_policy, max_episode_length):
     while True:
         obs.append(ob)
         ac = action_policy.get_action(ob)
-        ac = convert_tensor2control(ac)
+        ac = map2action(ac)
         # ac = action_policy  # test env
         next_ob, reward, done = env.step(ac)
         acs.append(ac)
@@ -129,5 +130,5 @@ def map2action(index):
         return carla.VehicleControl(1, -1, 0)
     elif index == 2:
         return carla.VehicleControl(1, 1, 0)
-    else:
+    elif index == 3:
         return carla.VehicleControl(0, 0, 1)

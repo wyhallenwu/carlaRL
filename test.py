@@ -1,25 +1,24 @@
-import carla
-import random
+# import carla
+# import random
 
-import scipy as sp
 
-client = carla.Client('localhost', 2000)
-client.set_timeout(15)
-world = client.get_world()
-client.reload_world(False)
-car = world.get_blueprint_library().filter('*vehicle*')
-spawn_points = world.get_map().get_spawn_points()
+# client = carla.Client('localhost', 2000)
+# client.set_timeout(15)
+# world = client.get_world()
+# client.reload_world(False)
+# car = world.get_blueprint_library().filter('*vehicle*')
+# spawn_points = world.get_map().get_spawn_points()
 
-while True:
-    print(len(world.get_actors()))
+# while True:
+#     print(len(world.get_actors()))
 
-    for i in range(50):
-        c = world.spawn_actor(random.choice(car), spawn_points[i])
+#     for i in range(50):
+#         c = world.spawn_actor(random.choice(car), spawn_points[i])
 
-    print(len(world.get_actors()))
-    client.reload_world(False)
-    client.set_timeout(15)
-    print(len(world.get_actors()))
+#     print(len(world.get_actors()))
+#     client.reload_world(False)
+#     client.set_timeout(15)
+# print(len(world.get_actors()))
 
 
 # print(car)
@@ -63,3 +62,11 @@ while True:
 
 #     actors = world.get_actors()
 #     print(len(actors))
+
+
+import numpy as np
+import torch
+x = np.array([1, 2, 3, 4])
+y = torch.from_numpy(x)
+print(x.shape)
+print(y.shape)
