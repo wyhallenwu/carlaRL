@@ -1,6 +1,6 @@
 from source.model import ActorCritic
-from source.carlaENV.carlaenv import CarlaEnv
-import source.utils.util as util
+from source.carlaenv import CarlaEnv
+import source.utility as util
 from source.replaybuffer import ReplayBuffer
 from torch.utils.tensorboard import SummaryWriter
 

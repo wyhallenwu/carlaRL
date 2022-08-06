@@ -1,7 +1,7 @@
 import carla
 import random
-from source.Agent.agent import ActorCar
-from source.utils.util import get_env_settings
+from source.agent import ActorCar
+from source.utility import get_env_settings
 
 SETTING_FILE = "./config.yaml"
 

@@ -5,7 +5,7 @@ from torch import distributions
 from torch import optim
 import numpy as np
 import time
-import source.utils.util as util
+import source.utility as util
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

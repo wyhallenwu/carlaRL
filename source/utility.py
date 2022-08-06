@@ -1,6 +1,5 @@
 import numpy as np
 import yaml
-# from source.carlaENV.carlaenv import CarlaEnv
 import torch
 import torch.nn as nn
 import carla

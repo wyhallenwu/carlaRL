@@ -1,4 +1,4 @@
-from source.utils.util import convert_path2list
+from source.utility import convert_path2list
 import numpy as np
 
 
