@@ -31,6 +31,9 @@ class Trainer(object):
         self.ac_net.update(training_paths, epoch_i)
 
     def training_loop(self):
+        print("*" * 20)
+        print(f"use device {device}")
+        print("*" * 20)
         for i in tqdm(range(self.config['epoch']), desc="Epoch"):
             self.train(i)
             if (i + 1) % 10 == 0:

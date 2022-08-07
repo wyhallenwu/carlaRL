@@ -47,7 +47,7 @@ class ActorCritic(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, obs):
-        input = self.resnet(obs)
+        input = self.resnet(obs.to(device))
         middle_result = self.layers(input)
         probs = self.actor_layer(middle_result).squeeze()
         v_value = self.critic_layer(middle_result).squeeze()
@@ -81,9 +81,9 @@ class ActorCritic(nn.Module):
                 i], actions[i], rewards[i], next_obs[i], terminals[i]
             # update critic
             print("fit v model.")
-            _, v_current = self.forward(obs)
+            _, v_current = self.forward(obs.to(device))
             self.optimizer.zero_grad()
-            _, v_next = self.forward(nextobs)
+            _, v_next = self.forward(nextobs.to(device))
             target = self.gamma * v_next + util.totensor(rws)
             critic_loss = self.loss_fn(v_current, target)
             critic_loss.backward()
@@ -92,14 +92,14 @@ class ActorCritic(nn.Module):
             # update actor
             print("update actor")
             self.optimizer.zero_grad()
-            pred_action, v_value = self.forward(obs)
+            pred_action, v_value = self.forward(obs.to(device))
             advantages = self.compute_advantage(
                 obs, rws, terminal, util.tonumpy(v_value))
             loss = -torch.mean(pred_action.log_prob(acs)
                                * util.totensor(advantages))
-            print(f"loss: {loss}")
             loss.backward()
             self.optimizer.step()
+            print(f"loss: {loss}")
             loss_list.append(util.tonumpy(loss))
             print("update actor done.")
         end = time.time()

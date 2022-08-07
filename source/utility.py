@@ -5,8 +5,8 @@ import torch.nn as nn
 import carla
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-
-writer = SummaryWriter("./log/")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+writer = SummaryWriter(log_dir="./log/", flush_secs=20)
 
 
 def log_path(path, num_trajs):
@@ -14,9 +14,11 @@ def log_path(path, num_trajs):
     writer.add_scalar("Path/rewards", np.sum(path['rewards']), num_trajs)
     writer.add_scalar("Path/frames", path['frames'], num_trajs)
 
+
 def log_training(loss, epoch_i):
     """"log training process."""
     writer.add_scalar("Train/loss", loss, epoch_i)
+
 
 def get_env_settings(filename):
     """get all the settings of the Carla Simulator.
@@ -112,17 +114,17 @@ def convert_tensor2control(pred_action: torch.Tensor) -> carla.VehicleControl:
     return carla.VehicleControl(ac[0], ac[1], ac[2])
 
 
-device = None
+# device = None
 
 
-def init_gpu(use_gpu=True, gpu_id=0):
-    global device
-    if torch.cuda.is_available() and use_gpu:
-        device = torch.device("cuda:" + str(gpu_id))
-        print("Using GPU id {}".format(gpu_id))
-    else:
-        device = torch.device("cpu")
-        print("GPU not detected. Defaulting to CPU.")
+# def init_gpu(use_gpu=True, gpu_id=0):
+#     global device
+#     if torch.cuda.is_available() and use_gpu:
+#         device = torch.device("cuda:" + str(gpu_id))
+#         print("Using GPU id {}".format(gpu_id))
+#     else:
+#         device = torch.device("cpu")
+#         print("GPU not detected. Defaulting to CPU.")
 
 
 def set_device(gpu_id):

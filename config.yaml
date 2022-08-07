@@ -13,5 +13,5 @@ lr: 0.0001
 gamma: 0.5
 buffer_size: 100000
 hidden_dim: 1024
-epoch: 1000
-sample_n: 100
+epoch: 100
+sample_n: 16
