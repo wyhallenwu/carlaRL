@@ -42,7 +42,7 @@ class ReplayBuffer(object):
             self.next_observations = self.next_observations[-self.buffer_size:]
             self.terminals.append(terminals)
             self.terminals = self.terminals[-self.buffer_size:]
-            self.frames.appnd(frames)
+            self.frames.append(frames)
             self.frames = self.frames[-self.buffer_size:]
 
     def sample_random_rollouts(self, num_rollouts):
