@@ -17,17 +17,14 @@ dependencies:
   - python=3.6.13=h12debd9_1
   - readline=8.1.2=h7f8727e_1
   - setuptools=58.0.4=py36h06a4308_0
-  - sqlite=3.38.5=hc218d9a_0
+  - sqlite=3.39.2=h5082296_0
   - tk=8.6.12=h1ccaba5_0
   - wheel=0.37.1=pyhd3eb1b0_0
   - xz=5.2.5=h7f8727e_1
   - zlib=1.2.12=h7f8727e_2
   - pip:
-    - autopep8==1.6.0
     - carla==0.9.13
-    - pycodestyle==2.8.0
-    - pyyaml==6.0
-    - toml==0.10.2
     - torch==1.10.1
+    - torchaudio==0.10.1
     - torchvision==0.11.2
 prefix: /home/wuyuheng/anaconda3/envs/carla
