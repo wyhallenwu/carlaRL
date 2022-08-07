@@ -3,7 +3,19 @@ import yaml
 import torch
 import torch.nn as nn
 import carla
+from torch.utils.tensorboard import SummaryWriter
 
+writer = SummaryWriter("../log/")
+
+
+def log_path(path, num_trajs):
+    """log the path while sampling."""
+    writer.add_scalar("rewards/trajs", np.sum(path['rewards']), num_trajs)
+    writer.add_scalar("frames/trajs", path['frames'], num_trajs)
+
+def log_training(loss, epoch_i):
+    """"log training process."""
+    writer.add_scalar("loss/epoch", loss, epoch_i)
 
 def get_env_settings(filename):
     """get all the settings of the Carla Simulator.
@@ -36,7 +48,8 @@ def Path(obs, acs, rws, next_obs, terminals):
         "actions": acs,
         "rewards": np.array(rws),
         "next_obs": next_obs,
-        "terminals": np.array(terminals)
+        "terminals": np.array(terminals),
+        "frames": len(obs)
     }
 
 
@@ -67,10 +80,12 @@ def sample_trajectory(env, action_policy, max_episode_length):
     return Path(obs, acs, rws, next_obs, terminals)
 
 
-def sample_n_trajectories(n, env, action_policy, max_episode_length):
+def sample_n_trajectories(n, env, action_policy, max_episode_length, epoch_i):
     paths = []
-    for _ in range(n):
+    for i in range(n):
         path = sample_trajectory(env, action_policy, max_episode_length)
+        # log path
+        log_path(path, epoch_i * n + i + 1)
         paths.append(path)
     return paths
 
@@ -82,7 +97,8 @@ def convert_path2list(paths):
     rewards = [path["rewards"] for path in paths]
     next_obs = [path["next_obs"] for path in paths]
     terminals = [path["terminals"] for path in paths]
-    return observations, actions, rewards, next_obs, terminals
+    frames = [path["frames"] for path in paths]
+    return observations, actions, rewards, next_obs, terminals, frames
 
 
 def convert_control2numpy(action: carla.VehicleControl) -> np.ndarray:

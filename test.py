@@ -67,7 +67,10 @@
 import numpy as np
 import torch
 from torch import distributions
+x1 = np.array([1, 2, 3]).reshape(-1)
+print(x1.shape)
 x = np.array([[0.1, 0.2, 0.3, 0.4], [0.1, 0.2, 0.3, 0.4]])
+print(np.mean(x))
 y = torch.from_numpy(x)
 z = distributions.Categorical(y)
 print(y.shape)

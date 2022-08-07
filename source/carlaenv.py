@@ -51,14 +51,11 @@ class CarlaEnv(object):
                 random.choice(cars), self.spawn_points[i + 1])
             car.set_autopilot(True)
             self.actor_list_env.append(car)
-        print(f"setting {len(self.actor_list_env)} in _set_env")
-        # self.client.set_timeout(5)
+        # print(f"setting {len(self.actor_list_env)} in _set_env")
         # adding agent(combination of car and camera)
         self.agent = ActorCar(self.client, self.world,
                               self.bp, self.spawn_points)
         self.vehicle_control = self.agent.actor_car.apply_control
-        # print("check0: ", len(self.world.get_actors().filter(
-        #     'vehicle')))
 
     def step(self, action):
         """take an action.
@@ -113,17 +110,16 @@ class CarlaEnv(object):
 
     def cleanup_world(self):
         # clean up the env
-        print("actorlist length: ", len(self.actor_list_env))
+        # print("actorlist length: ", len(self.actor_list_env))
         self.client.apply_batch([carla.command.DestroyActor(x)
                                  for x in self.actor_list_env])
         # clean up the agent
         if self.agent is not None:
-            print("destroy agent")
+            # print("destroy agent")
             self.agent.cleanup()
         self.agent = None
         self.actor_list_env = []
-        print("clean up the world")
-        print("after cleanup world actors: ", len(self.world.get_actors().filter(
+        print("clean up the wrold, after cleanup world actors: ", len(self.world.get_actors().filter(
             'vehicle')))
         assert len(self.world.get_actors().filter(
             'vehicle')) == 0, "cleanup world wrong"
@@ -142,7 +138,7 @@ class CarlaEnv(object):
         """
         return self.world.get_actors().filter('vehicle')
 
-    def _exit(self):
+    def exit_env(self):
         self.cleanup_world()
         settings = self.world.get_settings()
         settings.synchronous_mode = False

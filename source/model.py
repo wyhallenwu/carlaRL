@@ -6,8 +6,8 @@ from torch import optim
 import numpy as np
 import time
 import source.utility as util
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cpu")
 
 
 class ActorCritic(nn.Module):
@@ -71,14 +71,16 @@ class ActorCritic(nn.Module):
                     v_current[i + 1] - v_current[i]
         return advantages
 
-    def update(self, paths):
-        observations, actions, rewards, next_obs, terminals = util.convert_path2list(
+    def update(self, paths, epoch_i):
+        observations, actions, rewards, next_obs, terminals, frames = util.convert_path2list(
             paths)
         start = time.time()
+        loss_list = []
         for i in range(len(paths)):
             obs, acs, rws, nextobs, terminal = observations[
                 i], actions[i], rewards[i], next_obs[i], terminals[i]
             # update critic
+            print("fit v model.")
             _, v_current = self.forward(obs)
             self.optimizer.zero_grad()
             _, v_next = self.forward(nextobs)
@@ -86,7 +88,9 @@ class ActorCritic(nn.Module):
             critic_loss = self.loss_fn(v_current, target)
             critic_loss.backward()
             self.optimizer.step()
+            print("fit v model done.")
             # update actor
+            print("update actor")
             self.optimizer.zero_grad()
             pred_action, v_value = self.forward(obs)
             advantages = self.compute_advantage(
@@ -96,5 +100,8 @@ class ActorCritic(nn.Module):
             print(f"loss: {loss}")
             loss.backward()
             self.optimizer.step()
+            loss_list.append(util.tonumpy(loss))
+            print("update actor done.")
         end = time.time()
+        util.log_training(np.mean(loss_list), epoch_i)
         print(f"time: {end - start}")
