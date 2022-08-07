@@ -4,8 +4,9 @@ import torch
 import torch.nn as nn
 import carla
 from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
-writer = SummaryWriter("../log/")
+writer = SummaryWriter("./log/")
 
 
 def log_path(path, num_trajs):
@@ -82,7 +83,7 @@ def sample_trajectory(env, action_policy, max_episode_length):
 
 def sample_n_trajectories(n, env, action_policy, max_episode_length, epoch_i):
     paths = []
-    for i in range(n):
+    for i in tqdm(range(n), desc="sample"):
         path = sample_trajectory(env, action_policy, max_episode_length)
         # log path
         log_path(path, epoch_i * n + i + 1)

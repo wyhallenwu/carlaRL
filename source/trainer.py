@@ -4,6 +4,7 @@ import source.utility as util
 from source.replaybuffer import ReplayBuffer
 from source.model import device
 from tqdm import tqdm
+import torch
 
 
 class Trainer(object):
@@ -31,4 +32,7 @@ class Trainer(object):
 
     def training_loop(self):
         for i in tqdm(range(self.config['epoch']), desc="Epoch"):
-            self.train()
+            self.train(i)
+            if (i + 1) % 10 == 0:
+                print(f"save checkpoint at {i + 1}")
+                torch.save(self.ac_net.state_dict(), "../saveModel/")
