@@ -1,5 +1,51 @@
 # README
-this the final project of RL course. The project is to train a simple autonomous vehicle in Carla Simulator.    
+This the final project of reinforcement learning course. Training a model to autonomous vehicle in [`CARLA 0.9.13 releaes`](https://carla.org/).   
+
+## environment
+1. carla 0.9.13 release
+2. python 3.6
+3. dependencies in requirements.txt
+
+## set up env and test
+Use precompiled Carla [link](https://mirrors.sustech.edu.cn/carla/carla/0.9.13/) 
+```bash
+# download carla from sustech mirror, you can also follow the official instruction
+wget https://mirrors.sustech.edu.cn/carla/carla/0.9.13/CARLA_0.9.13.tar.gz
+tar -zxvf CARLA_0.9.13.tar.gz
+# set up python environment
+conda env create -f environment.yml
+# test
+python3 run.py
+```
+## design details
+> help to modify the algorithm  
+
+**carla world settings:**   
+using default world. Deploy and destroy the vehicles when resetting the world instead of reloading the whole world by `reload_world()`. Retrieve the rgb camera frame in synchronous mode, convert it to tensor and then store to replaybuffer.
+
+**agent settings:**   
+The agent car is always spawning  the agent at the first spawn_point with `sensor.camera.rgb` and `sensor.other.collision`.
+
+**reward and action:**  
+actions(`utility.py map2action()`):   
+| action index |                  action                  |
+| :----------: | :--------------------------------------: |
+|      0       | go straight on(vehicle.control(1, 0, 0)) |
+|      1       |   turn left(vehicle.control(1, -1, 0))   |
+|      2       |   turn right(vehicle.control(1, 1, 0))   |
+|      3       |     brake(vehicle.control(0, 0, 1))      |
+
+rewards(`carlaenv.py get_reward()`):  
+| rewards |              event              |
+| :-----: | :-----------------------------: |
+|  -200   | collision sensor retrieve event |
+|   -20   |       take action 3 brake       |
+|    1    |        take action 0,1,2        |
+
+
+**RL algorithms:**   
+currently using ActorCritic.   
+
 
 ## todos
 - [x] wrap the environment of carla following the paradigm of OpenAI gym
@@ -21,4 +67,7 @@ this the final project of RL course. The project is to train a simple autonomous
 - [x] rl algorithm(actor-critic)
   - [x] generate action
   - [x] pay attention to tensor numpy conversion and detach
-  - [ ] need test
+  - [x] need test
+
+
+## result

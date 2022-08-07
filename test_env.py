@@ -1,4 +1,4 @@
-from source.carlaENV import carlaenv
+from source.carlaenv import carlaenv
 import carla
 env = carlaenv.CarlaEnv()
 env.client.reload_world(False)
