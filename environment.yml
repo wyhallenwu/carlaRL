@@ -24,6 +24,7 @@ dependencies:
   - zlib=1.2.12=h7f8727e_2
   - pip:
     - carla==0.9.13
+    - pyyaml==6.0
     - torch==1.10.1
     - torchaudio==0.10.1
     - torchvision==0.11.2

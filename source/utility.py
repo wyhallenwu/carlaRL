@@ -11,12 +11,12 @@ writer = SummaryWriter("./log/")
 
 def log_path(path, num_trajs):
     """log the path while sampling."""
-    writer.add_scalar("rewards/trajs", np.sum(path['rewards']), num_trajs)
-    writer.add_scalar("frames/trajs", path['frames'], num_trajs)
+    writer.add_scalar("Path/rewards", np.sum(path['rewards']), num_trajs)
+    writer.add_scalar("Path/frames", path['frames'], num_trajs)
 
 def log_training(loss, epoch_i):
     """"log training process."""
-    writer.add_scalar("loss/epoch", loss, epoch_i)
+    writer.add_scalar("Train/loss", loss, epoch_i)
 
 def get_env_settings(filename):
     """get all the settings of the Carla Simulator.
