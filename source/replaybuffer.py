@@ -1,5 +1,6 @@
 from source.utility import convert_path2list
 import numpy as np
+import torch
 
 
 class ReplayBuffer(object):
@@ -28,16 +29,18 @@ class ReplayBuffer(object):
             self.terminals = terminals[-self.buffer_size:]
 
         else:
-            self.observations = np.concatenate(
-                [observations, self.observations])[-self.buffer_size:]
-            self.actions = np.concatenate(
-                [actions, self.actions])[-self.buffer_size:]
-            self.rewards = np.concatenate(
-                [self.rewards, rewards])[-self.buffer_size:]
-            self.next_observations = np.concatenate(
-                [next_obs, self.next_observations])[-self.buffer_size:]
-            self.terminals = np.concatenate(
-                [terminals, self.terminals])[-self.buffer_size:]
+            observations.append(
+                self.observations)
+            self.observations = observations[-self.buffer_size:]
+            actions.append(self.actions)
+            self.actions = actions[-self.buffer_size:]
+            rewards.append(self.rewards)
+            self.rewards = rewards[-self.buffer_size:]
+            next_obs.append(
+                self.next_observations)
+            self.next_observations = next_obs[-self.buffer_size:]
+            terminals.append(self.terminals)
+            self.terminals = terminals[-self.buffer_size:]
 
     def sample_random_rollouts(self, num_rollouts):
         indices = np.random.permutation(len(self.paths))[:num_rollouts]

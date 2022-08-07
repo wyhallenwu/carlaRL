@@ -20,10 +20,6 @@ class CarlaEnv(object):
         self.client = carla.Client(self.config['host'], self.config['port'])
         self.client.set_timeout(15)
         self.world = self.client.get_world()
-        # self.traffic_manager = self.client.get_trafficmanager(
-        #     self.config['tm_port'])
-        # self.traffic_manager.set_synchronous_mode(True)
-        # self.traffic_manager.set_random_device_seed(self.config['seed'])
         self.agent = None
         self.vehicle_control = None
         self.actor_list_env = []
@@ -35,9 +31,6 @@ class CarlaEnv(object):
         self.world.apply_settings(self.world_settings)
         print("init actors num", len(self.world.get_actors().filter(
             'vehicle')))
-        # refresh world
-        # self.client.reload_world(False)
-        # self._set_env()
 
     def _update_settings(self):
         self.world_settings = self.world.get_settings()
@@ -91,18 +84,13 @@ class CarlaEnv(object):
         # set false to keep the settings in sync
         print("initialize environment.")
         self.cleanup_world()
-        # self.client.reload_world(False)
         self.client.set_timeout(15)
         # adding cars to env
-        # self.world.tick()
         self._update_settings()
         self._set_env()
         # deploy env in sync mode
         frame_index = self.world.tick()
         print(f"after reset, current frame is: {frame_index}")
-        # self.client.set_timeout(10)
-        # print("check: ", len(self.world.get_actors().filter(
-        #     '*vehicle*')))
         assert len(self.world.get_actors().filter(
             '*vehicle*')) == (self.config['car_num'] + 1), "set env wrong"
         # return start image frame
@@ -126,8 +114,6 @@ class CarlaEnv(object):
     def cleanup_world(self):
         # clean up the env
         print("actorlist length: ", len(self.actor_list_env))
-        # for actor in self.actor_list_env:
-        #     assert actor.destroy(), "destroy actor false in env"
         self.client.apply_batch([carla.command.DestroyActor(x)
                                  for x in self.actor_list_env])
         # clean up the agent
@@ -157,7 +143,6 @@ class CarlaEnv(object):
         return self.world.get_actors().filter('vehicle')
 
     def _exit(self):
-        # self.client.reload_world(False)
         self.cleanup_world()
         settings = self.world.get_settings()
         settings.synchronous_mode = False

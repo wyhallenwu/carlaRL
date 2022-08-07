@@ -28,31 +28,34 @@ def Path(obs, acs, rws, next_obs, terminals):
         Path(dict):
     """
     if obs != []:
-        obs = np.stack(obs, axis=0)
-        acs = np.stack(acs, axis=0)
-        next_obs = np.stack(next_obs, axis=0)
+        obs = torch.stack(obs)
+        acs = torch.stack(acs).squeeze()
+        next_obs = torch.stack(next_obs)
     return {
-        "observations": np.array(obs, dtype=np.uint8),
-        "actions": np.array(acs, dtype=np.float32),
-        "rewards": np.array(rws, dtype=np.int),
-        "next_obs": np.array(next_obs, dtype=np.uint8),
-        "terminals": np.array(terminals, dtype=np.uint8)
+        "observations": obs,
+        "actions": acs,
+        "rewards": np.array(rws),
+        "next_obs": next_obs,
+        "terminals": np.array(terminals)
     }
 
 
 def sample_trajectory(env, action_policy, max_episode_length):
     """Sample one trajectory."""
     ob, _ = env.reset()
+    print("reset the environment done.")
     # env.set_timeout(5)
     steps = 0
     obs, acs, rws, next_obs, terminals = [], [], [], [], []
+    print("start sample new trajectory")
     while True:
         obs.append(ob)
         ac = action_policy.get_action(ob)
+        acs.append(ac)
         ac = map2action(ac)
+        print("action is: ", ac)
         # ac = action_policy  # test env
         next_ob, reward, done = env.step(ac)
-        acs.append(ac)
         rws.append(reward)
         next_obs.append(next_ob)
         terminals.append(done)
