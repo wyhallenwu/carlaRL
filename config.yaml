@@ -10,10 +10,10 @@ substepping:
   max_substeps: 10
 n_layers: 3
 lr: 0.001
-gamma: 0.9
+gamma: 0.99
 buffer_size: 1000
 hidden_dim: 1024
-epoch: 50
-sample_n: 8
-training_n: 12
+epoch: 500
+sample_n: 1
+training_n: 1
 max_episode_length: 3000

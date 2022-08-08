@@ -39,12 +39,13 @@ rewards(`carlaenv.py get_reward()`):
 | rewards |              event              |
 | :-----: | :-----------------------------: |
 |  -200   | collision sensor retrieve event |
-|   -20   |       take action 3 brake       |
-|    1    |        take action 0,1,2        |
+|  -100   |       take action 3 brake       |
+|    2    |  take action 0(go straight on)  |
+|    1    |         take action 1,2         |
 
 
 **RL algorithms:**   
-currently using ActorCritic.   
+currently using A2C.
 
 
 ## todos
@@ -70,4 +71,6 @@ currently using ActorCritic.
   - [x] need test
 
 
-## result
+## notice
+To run the code on my limited computation resource machine(1 rtx3060), I setting it to sample one episode and then update(online A2C). Moreover, I also directly resize and crop the frames once receiving it and store it in the replaybuffer in Tensor type to save memory. Due to the limited hardware, I just tested under a small episode length but it exactly improves.  
+The reward settings can be further improved. The settings above is compared with serveral different settings. Taking brake frequently is too bad while driving. And if setting it to positive reward, the policy may learn to always brake no matter what it sees.   
