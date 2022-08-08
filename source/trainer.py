@@ -39,4 +39,4 @@ class Trainer(object):
             if (i + 1) % 10 == 0:
                 print(f"save checkpoint at {i + 1}")
                 torch.save(self.ac_net.state_dict(),
-                           f"./checkpoints/model{i}.pth")
+                           f"./checkpoints/model{i}.pt")
