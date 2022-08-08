@@ -81,8 +81,9 @@ class ActorCritic(nn.Module):
         for i in range(len(paths)):
             obs, acs, rws, nextobs, terminal = observations[
                 i], actions[i], rewards[i], next_obs[i], terminals[i]
-            obs = self.process_imgs(obs).to(device)
-            nextobs = self.process_imgs(nextobs).to(device)
+            with torch.no_grad():
+                obs = self.process_imgs(obs).to(device)
+                nextobs = self.process_imgs(nextobs).to(device)
             # update critic
             print("fit v model.")
             _, v_current = self.forward(obs)
