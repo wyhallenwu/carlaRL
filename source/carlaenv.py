@@ -107,6 +107,8 @@ class CarlaEnv(object):
             return -200
         if action_index == 3:
             return -100
+        elif action_index == 0:
+            return 5
         else:
             return 1
 
