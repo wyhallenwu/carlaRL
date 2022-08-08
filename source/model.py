@@ -64,8 +64,9 @@ class ActorCritic(nn.Module):
         return actions_distribution, v_value
 
     def get_action(self, obs):
-        print(f"obs shape: {obs.shape}")
-        obs = obs.unsqueeze(0).to(device)
+        # print(f"obs shape: {obs.shape}")
+        obs = self.image_transform(obs).unsqueeze(0).to(device)
+        # obs = obs.unsqueeze(0).to(device)
         action_prob, _ = self.forward(obs)
         action = action_prob.sample()
         return action
