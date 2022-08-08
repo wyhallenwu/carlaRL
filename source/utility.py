@@ -42,10 +42,10 @@ def Path(obs, acs, rws, next_obs, terminals):
     Returns:
         Path(dict):
     """
-    # if obs != []:
-    #     obs = torch.stack(obs)
-    #     acs = torch.stack(acs).squeeze()
-    #     next_obs = torch.stack(next_obs)
+    if obs != []:
+        obs = torch.stack(obs)
+        acs = torch.stack(acs).squeeze()
+        next_obs = torch.stack(next_obs)
     return {
         "observations": obs,
         "actions": acs,
@@ -68,8 +68,8 @@ def sample_trajectory(env, action_policy, max_episode_length):
         obs.append(ob)
         ac = action_policy.get_action(ob)
         acs.append(ac)
-        ac = map2action(ac)
-        print("action is: ", ac)
+        # ac = map2action(ac)
+        # print("action is: ", ac)
         # ac = action_policy  # test env
         next_ob, reward, done = env.step(ac)
         rws.append(reward)

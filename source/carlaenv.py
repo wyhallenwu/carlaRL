@@ -1,7 +1,7 @@
 import carla
 import random
 from source.agent import ActorCar
-from source.utility import get_env_settings
+from source.utility import get_env_settings, map2action
 
 SETTING_FILE = "./config.yaml"
 
@@ -48,16 +48,16 @@ class CarlaEnv(object):
         print(f"set {self.config['car_num']} vehicles in the world")
         for i in range(self.config['car_num']):
             car = self.world.spawn_actor(
-                random.choice(cars), self.spawn_points[i + 1])
+                random.choice(cars), self.spawn_points[i])
             car.set_autopilot(True)
             self.actor_list_env.append(car)
         # print(f"setting {len(self.actor_list_env)} in _set_env")
         # adding agent(combination of car and camera)
         self.agent = ActorCar(self.client, self.world,
-                              self.bp, self.spawn_points)
+                              self.bp, self.spawn_points, self.config)
         self.vehicle_control = self.agent.actor_car.apply_control
 
-    def step(self, action):
+    def step(self, action_index):
         """take an action.
         Args:
             action(carla.VehicleControl):throttle, steer, break, hand_break, reverse
@@ -66,13 +66,15 @@ class CarlaEnv(object):
             reward(int)
             done(bool)
         """
+        action = map2action(action_index)
         assert isinstance(
             action, carla.VehicleControl), "action type is not vehicle control"
+        print("take: ", action)
         self.vehicle_control(action)
         frame_index = self.world.tick()
         print(f"after step, current frame is: {frame_index}")
         observation, collision = self.agent.retrieve_data(frame_index)
-        reward = self.get_reward(action, collision)
+        reward = self.get_reward(action_index, collision)
         done = 1 if collision != 0 else 0
         return observation, reward, done
 
@@ -103,8 +105,8 @@ class CarlaEnv(object):
         """
         if intensity != 0:
             return -200
-        if action_index == 4:
-            return -10
+        if action_index == 3:
+            return -100
         else:
             return 1
 
