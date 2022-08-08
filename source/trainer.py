@@ -20,14 +20,14 @@ class Trainer(object):
         # sample n trajectories
         print("sample trajectories")
         paths = util.sample_n_trajectories(
-            self.config['sample_n'], self.env, self.ac_net, 10000, epoch_i)
+            self.config['sample_n'], self.env, self.ac_net, self.config['max_episode_length'], epoch_i)
         # add trajectories to replaybuffer
         print("add to replaybuffer")
         self.replaybuffer.add_rollouts(paths)
         # sample lastest trajectories for training
         print("update policy")
         training_paths = self.replaybuffer.sample_recent_rollouts(
-            self.config['sample_n'])
+            self.config['training_n'])
         self.ac_net.update(training_paths, epoch_i)
 
     def training_loop(self):

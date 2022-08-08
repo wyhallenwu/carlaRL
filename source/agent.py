@@ -40,13 +40,7 @@ class ActorCar(object):
         self._col_queue = queue.Queue()
         self.rgb_camera.listen(self._camera_queue.put)
         self.col_sensor.listen(self._col_queue.put)
-        self.image_transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
-                                 0.229, 0.224, 0.225]),
-        ])
+        
 
     def retrieve_data(self, frame_index):
         while not self.process_img(frame_index):
@@ -68,8 +62,7 @@ class ActorCar(object):
             img = img[:, :, :3]
             # reverse to RGB
             img = img[:, :, ::-1]
-            image = Image.fromarray(np.uint8(img)).convert('RGB')
-            self.front_camera = self.image_transform(image)
+            self.front_camera = Image.fromarray(np.uint8(img)).convert('RGB')
             return True
         self.front_camera = None
         return False

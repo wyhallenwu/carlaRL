@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torchvision import models
+from torchvision import models, transforms
 from torch import distributions
 from torch import optim
 import numpy as np
@@ -30,13 +30,21 @@ class ActorCritic(nn.Module):
         self.critic_layer = nn.Linear(self.hidden_dim, 1)
         self.optimizer = optim.Adam(self.parameters(), lr=self.learning_rate)
         self.loss_fn = nn.MSELoss()
+        self.image_transform = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
+                                 0.229, 0.224, 0.225]),
+        ])
 
     def process_imgs(self, imgs):
         """process_imgs processes PIL images with Resnet50 and return a mini-batch tensor."""
         if not isinstance(imgs, list):
-            return imgs.unsqueeze(0).to(device)
+            imgs = self.image_transform(imgs)
+            return imgs.unsqueeze(0)
         else:
-            return imgs.to(device)
+            return torch.stack([self.image_transform(img).unsqueeze(0) for img in imgs])
 
     def build_layers(self):
         layers = []
@@ -47,7 +55,8 @@ class ActorCritic(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, obs):
-        input = self.resnet(obs.to(device))
+        obs = obs.to(device)
+        input = self.resnet(obs)
         middle_result = self.layers(input)
         probs = self.actor_layer(middle_result).squeeze()
         v_value = self.critic_layer(middle_result).squeeze()
@@ -56,7 +65,8 @@ class ActorCritic(nn.Module):
 
     def get_action(self, obs):
         print(f"obs shape: {obs.shape}")
-        action_prob, _ = self.forward(obs.unsqueeze(0).to(device))
+        obs = obs.unsqueeze(0).to(device)
+        action_prob, _ = self.forward(obs)
         action = action_prob.sample()
         return action
 
@@ -79,11 +89,13 @@ class ActorCritic(nn.Module):
         for i in range(len(paths)):
             obs, acs, rws, nextobs, terminal = observations[
                 i], actions[i], rewards[i], next_obs[i], terminals[i]
+            obs = obs.to(device)
+            nextobs = nextobs.to(device)
             # update critic
             print("fit v model.")
-            _, v_current = self.forward(obs.to(device))
+            _, v_current = self.forward(obs)
             self.optimizer.zero_grad()
-            _, v_next = self.forward(nextobs.to(device))
+            _, v_next = self.forward(nextobs)
             target = self.gamma * v_next + util.totensor(rws)
             critic_loss = self.loss_fn(v_current, target)
             critic_loss.backward()
@@ -92,7 +104,7 @@ class ActorCritic(nn.Module):
             # update actor
             print("update actor")
             self.optimizer.zero_grad()
-            pred_action, v_value = self.forward(obs.to(device))
+            pred_action, v_value = self.forward(obs)
             advantages = self.compute_advantage(
                 obs, rws, terminal, util.tonumpy(v_value))
             loss = -torch.mean(pred_action.log_prob(acs)

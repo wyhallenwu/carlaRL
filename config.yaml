@@ -9,9 +9,11 @@ substepping:
   max_substep_delta_time: 0.01
   max_substeps: 10
 n_layers: 3
-lr: 0.0001
+lr: 0.005
 gamma: 0.5
 buffer_size: 100000
 hidden_dim: 1024
 epoch: 100
 sample_n: 16
+training_n: 24
+max_episode_length: 4000
