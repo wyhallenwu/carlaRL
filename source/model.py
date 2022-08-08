@@ -55,7 +55,7 @@ class ActorCritic(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, obs):
-        obs = obs.to(device)
+        obs = self.process_imgs(obs).to(device)
         input = self.resnet(obs)
         middle_result = self.layers(input)
         probs = self.actor_layer(middle_result).squeeze()
@@ -65,7 +65,7 @@ class ActorCritic(nn.Module):
 
     def get_action(self, obs):
         # print(f"obs shape: {obs.shape}")
-        obs = self.image_transform(obs).unsqueeze(0).to(device)
+        obs = self.process_imgs(obs).to(device)
         # obs = obs.unsqueeze(0).to(device)
         action_prob, _ = self.forward(obs)
         action = action_prob.sample()
