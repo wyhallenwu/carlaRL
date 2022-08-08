@@ -42,10 +42,10 @@ def Path(obs, acs, rws, next_obs, terminals):
     Returns:
         Path(dict):
     """
-    if obs != []:
-        obs = torch.stack(obs)
-        acs = torch.stack(acs).squeeze()
-        next_obs = torch.stack(next_obs)
+    # if obs != []:
+    #     obs = torch.stack(obs)
+    #     acs = torch.stack(acs).squeeze()
+    #     next_obs = torch.stack(next_obs)
     return {
         "observations": obs,
         "actions": acs,
