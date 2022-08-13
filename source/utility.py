@@ -143,8 +143,8 @@ def map2action(index):
         return carla.VehicleControl(0, 0, 1)
 
 
-def check_average_reward(paths):
-    r = [np.sum(path['rewards']) for path in paths]
+def check_average_frames(paths):
+    r = [np.sum(path['frames']) for path in paths]
     return np.mean(r)
 
 
@@ -154,3 +154,10 @@ def build_resnet():
     for para in resnet.parameters():
         para.requires_grad = False
     return resnet
+
+
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    torch.backends.cudnn.deterministic = True

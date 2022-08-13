@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import source.utility as util
 from torch.distributions import Normal
+import carla
 
 config = util.get_env_settings("./config.yaml")
 device = util.device
@@ -113,17 +114,18 @@ class PolicyNet(nn.Module):
         return action, log_prob, z, mean, log_std
 
     def get_action(self, obs):
-        mean, std = self.forward(obs)
-        std = std.exp()
-        normal = Normal(mean, std)
-        z = normal.sample()
-        action = torch.tanh(z)
-        action = util.tonumpy(action)
-        return action[0]
+        with torch.no_grad():
+            mean, log_std = self.forward(obs.to(device))
+            log_std = log_std.exp()
+            normal = Normal(mean, log_std)
+            z = normal.sample()
+            action = torch.tanh(z)
+        # only control steer
+        return carla.VehicleControl(1, util.tonumpy(action), 0)
 
 
 class SAC(object):
-    def __init__(self, action_dim, log_min, log_max, replaybuffer, gamma, mean_lambda, std_lambda, z_lambda, soft_tau) -> None:
+    def __init__(self, action_dim, log_min, log_max, replaybuffer, gamma, soft_tau) -> None:
         self.value_net = ValueNetwork().to(device)
         self.target_value_net = ValueNetwork().to(device)
         # copy the parameters
@@ -133,14 +135,13 @@ class SAC(object):
         self.policy_net = PolicyNet(action_dim, log_min, log_max).to(device)
         self.replaybuffer = replaybuffer
         self.gamma = gamma
-        self.mean_lambda = mean_lambda
-        self.std_lambda = std_lambda
-        self.z_lambda = z_lambda
+        # self.mean_lambda = mean_lambda
+        # self.std_lambda = std_lambda
+        # self.z_lambda = z_lambda
         self.soft_tau = soft_tau
 
-    def update(self):
+    def update(self, paths):
         # get rollouts
-        paths = self.replaybuffer.sample_recent_rollouts(config['sample_n'])
         obs, acs, rws, next_obs, terminals, _ = util.convert_path2list(paths)
         # soft q net loss
         soft_q_value = self.soft_q_net.forward(obs, acs)
@@ -180,3 +181,5 @@ class SAC(object):
         for param, t_param in zip(self.value_net.parameters(), self.target_value_net.parameters()):
             t_param.data.copy_(
                 t_param.data * (1 - self.soft_tau) + param.data * self.soft_tau)
+
+        return soft_q_loss.item(), value_net_loss.item(), policy_loss.item()
